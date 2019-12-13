@@ -1,0 +1,2 @@
+# CoEclipse
+CoEclipse Project

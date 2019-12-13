@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="CoEclipse Category"
+            id="SSE.CoEclipse.Category.CoCategory">
+      </category>
+      <view
+            allowMultiple="false"
+            category="SSE.CoEclipse.Category.CoCategory"
+            class="sse.coeclipse.views.CoView"
+            icon="icons/sample.png"
+            id="sse.coeclipse.views.CoView"
+            inject="true"
+            name="CoEclipse View">
+      </view>
+      <view
+            category="SSE.CoEclipse.Category.CoCategory"
+            class="sse.coeclipse.views.SideView"
+            icon="icons/sample.png"
+            id="SSE.CoEclipse.views.SideView"
+            name="CoEclipse SideView"
+            restorable="false">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <view
+               id="sse.coeclipse.views.CoView"
+               relative="org.eclipse.ui.views.ProblemView"
+               relationship="right"
+               ratio="0.5">
+         </view>
+      </perspectiveExtension>
+   </extension>
+
+</plugin>
