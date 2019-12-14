@@ -11,6 +11,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import sse.coeclipse.listeners.CoCaretListener;
+import sse.coeclipse.listeners.CoDocumentListener;
+import sse.coeclipse.listeners.CoKeyListenerForSideView;
+import sse.coeclipse.listeners.CoLineBackgroundListener;
+import sse.coeclipse.listeners.CoModifyListener;
+import sse.coeclipse.listeners.CoMouseWheelListenerForSideView;
+import sse.coeclipse.listeners.CoVerifyKeyListener;
 import sse.coeclipse.views.CoView;
 import sse.coeclipse.views.SideView;;
 
@@ -45,13 +52,15 @@ public class Launcher {
 		final IDocument doc = documentProvider.getDocument(ed.getEditorInput());
 		
 		viewer = (ITextViewer) (ed.getAdapter(ITextOperationTarget.class));
-
-		CompilationUnitEditor cue = (CompilationUnitEditor) ed;
-		st = cue.getViewer().getTextWidget();
+		st = viewer.getTextWidget();
+		
+		// 此处关于st的获取方式待解决
+		//CompilationUnitEditor cue = (CompilationUnitEditor) ed;
+		//st = cue.getViewer().getTextWidget();
 		sel = ed.getSelectionProvider();
 		
 		// new-start
-		IAnnotationModel model = cue.getViewer().getAnnotationModel();
+		//IAnnotationModel model = cue.getViewer().getAnnotationModel();
 
 		// new-end
 
@@ -65,37 +74,37 @@ public class Launcher {
 
 		cp.doc = doc;
 
-		RCPDocumentListener listener = new RCPDocumentListener(view, cp, st);
+		CoDocumentListener listener = new CoDocumentListener(view, cp, st);
 
 		doc.addDocumentListener(listener);
 		// ed.getEditorSite().getSelectionProvider().addSelectionChangedListener(sel);
 
-		RCPVerifyKeyListener verifyKeyListener = new RCPVerifyKeyListener(view,
+		CoVerifyKeyListener verifyKeyListener = new CoVerifyKeyListener(view,
 				cp, st, sel);
 		st.addVerifyKeyListener(verifyKeyListener);
 
-		RCPModifyListener modifyListener = new RCPModifyListener(view, cp, st);
+		CoModifyListener modifyListener = new CoModifyListener(view, cp, st);
 		st.addModifyListener(modifyListener);
 
 		cp.docName = docName;
 		cp.start();
 
-		cp.dalProcessor.isDebugingMode = applyDAL ? false : true;
+		//cp.dalProcessor.isDebugingMode = applyDAL ? false : true;
 
-		RCPLineBackgroundListener lineBackgroundListener = new RCPLineBackgroundListener(
+		CoLineBackgroundListener lineBackgroundListener = new CoLineBackgroundListener(
 				view, cp, st);
 		st.addLineBackgroundListener(lineBackgroundListener);
 
-		st.addKeyListener(new RCPKeyListenerForSideView(view, cp, st));
-		st.addMouseWheelListener(new RCPMouseWheelListenerForSideView(view, cp,
+		st.addKeyListener(new CoKeyListenerForSideView(view, cp, st));
+		st.addMouseWheelListener(new CoMouseWheelListenerForSideView(view, cp,
 				st));
 
-		RCPCaretListener caretListener = new RCPCaretListener(view, cp, st, sel);
+		CoCaretListener caretListener = new CoCaretListener(view, cp, st, sel);
 		st.addCaretListener(caretListener);
 
 		// System.out.println("started\r\n"); //debug
 
-		view.label.setText("Session\r\nstarted.\r\nSite ID: " + cp.sm.sid);
+		//view.label.setText("Session\r\nstarted.\r\nSite ID: " + cp.sm.sid);
 		
 		return 0;
 	}
