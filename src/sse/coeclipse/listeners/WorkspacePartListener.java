@@ -10,6 +10,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import sse.coeclipse.core.CentralProcessorManager;
 import sse.coeclipse.views.CoView;
 
 public class WorkspacePartListener implements IPartListener {
@@ -21,7 +22,8 @@ public class WorkspacePartListener implements IPartListener {
 	
 	public boolean isOpened = false;
 	
-
+	// 当document第一次被打开时，OpenDocument启动一个CentralProcessor
+	// flag标记文件是否被打开
 	@Override
 	public void partActivated(IWorkbenchPart part)
 	{
@@ -39,19 +41,13 @@ public class WorkspacePartListener implements IPartListener {
     			final IDocumentProvider documentProvider = ed.getDocumentProvider();
     			final IDocument doc = documentProvider.getDocument(ed.getEditorInput());
     			
-    			//System.out.println(doc.get(3, 4));
     			ITextViewer viewer = (ITextViewer) (ed.getAdapter(ITextOperationTarget.class));
     			
     			IFile file = (IFile)(ed.getEditorInput().getAdapter(IFile.class));
     			
     			String docName;
-    			docName = file.getLocation().toString();
-    			
-    			//String pro = "SampleApplication/";
-    			//int pos = docName.indexOf(pro, 0);
-    			//pos += pro.length();
-    			//docName = docName.substring(pos, docName.length());
-    			
+    			docName = file.getFullPath().toString();
+    					
     			System.out.println(docName);
     			
     			view.OpenDocument(docName);
@@ -70,13 +66,18 @@ public class WorkspacePartListener implements IPartListener {
 		// TODO Auto-generated method stub
 		
 	}
-
+	
+	//Document关闭时，从CentralProcessorManager中删除对应的CentralProcessor
 	@Override
 	public void partClosed(IWorkbenchPart part)
 	{
 		if ( part instanceof IEditorPart )
 		{
+			ITextEditor tempEd = (ITextEditor)(part.getAdapter(ITextEditor.class));
+			String fileName = ((IFile)(tempEd.getEditorInput().getAdapter(IFile.class))).getFullPath().toString();
 			//System.out.println(((IEditorPart)part).getTitle());
+			//System.out.println(fileName);
+			CentralProcessorManager.deleteCentralProcessor(fileName);
 			
 			if ( isOpened == true )
 			{

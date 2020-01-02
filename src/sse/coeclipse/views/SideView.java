@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.part.ViewPart;
 
+// 暂时无用，忽略
 public class SideView extends ViewPart implements Listener {
 	
 	public static final String ID = "SSE.CoEclipse.views.SideView";

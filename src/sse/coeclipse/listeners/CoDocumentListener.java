@@ -6,8 +6,11 @@ import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.swt.custom.StyledText;
 
 import sse.coeclipse.core.CentralProcessor;
+import sse.coeclipse.core.CentralProcessorManager;
 import sse.coeclipse.views.CoView;
 
+// 完成对本地document变动的监听
+// 每个document绑定一个CentralProcessor
 public class CoDocumentListener implements IDocumentListener {
 	CoView theView;
 	CentralProcessor cp;
@@ -23,50 +26,39 @@ public class CoDocumentListener implements IDocumentListener {
 		st = _st;
 	}
 
-
+	// DocumentEvent为捕获的document变化
 	public void documentAboutToBeChanged(DocumentEvent event)
 	{
-		// st.setStyleRange(null);
-
+		// isRemotePlaying为资源锁，防止循环监听远端变更
 		if (cp.isRemotePlaying == true)
 		{
 			return;
 		}
 
 		System.out.println("documentAboutToBeChanged"); //debug
-		// System.out.println(event.toString());
+		System.out.println(event.toString());
 
-		synchronized (cp.lockCentral)
+		String strTemp;
+
+		if (event.getLength() != 0)
 		{
-			// System.out.println("#1"); //debug
-
-			String strTemp;
-
-			if (event.getLength() != 0)
+			try
 			{
-				try
-				{
-					strTemp = cp.doc.get(event.getOffset(), event.getLength());
-				}
-				catch (BadLocationException e)
-				{
-					return;
-				}
+				strTemp = cp.doc.get(event.getOffset(), event.getLength());
 			}
-			else
+			catch (BadLocationException e)
 			{
-				strTemp = "";
+				return;
 			}
-
-//			cp.editingOperationProcessor.processLocalOperation(event, strTemp,
-//					cp.iDALTagForNextEditingOperation);
-
-			
-			// cp.isTransitionPeriod = false;
-
-			// cp.lockCentral.notify();
-
-			// System.out.println("#2"); //debug
+		}
+		else
+		{
+			strTemp = "";
+		}
+		// 捕获的事件调用editingOperationProcessor处理
+		cp.editingOperationProcessor.processLocalOperation(event, strTemp);
+		for (String key : CentralProcessorManager.manager.keySet()) {
+		    System.out.println(key + " ：" + CentralProcessorManager.manager.get(key).docName);
 		}
 
 		//System.out.println("document about to be changed over"); //debug

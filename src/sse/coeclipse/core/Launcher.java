@@ -11,15 +11,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import sse.coeclipse.listeners.CoCaretListener;
+
 import sse.coeclipse.listeners.CoDocumentListener;
-import sse.coeclipse.listeners.CoKeyListenerForSideView;
-import sse.coeclipse.listeners.CoLineBackgroundListener;
-import sse.coeclipse.listeners.CoModifyListener;
-import sse.coeclipse.listeners.CoMouseWheelListenerForSideView;
-import sse.coeclipse.listeners.CoVerifyKeyListener;
+
 import sse.coeclipse.views.CoView;
-import sse.coeclipse.views.SideView;;
+import sse.coeclipse.views.SideView;
 
 public class Launcher {
 	public CentralProcessor cp = null;
@@ -43,7 +39,7 @@ public class Launcher {
 		docName = _docName;
 	}
 	
-	
+	// Launcher启动一个CentralProcessor，并为CentralProcessor挂载DocumentListener
 	public int start()
 	{
 		final ITextEditor ed = (ITextEditor) (PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor());
@@ -54,15 +50,10 @@ public class Launcher {
 		viewer = (ITextViewer) (ed.getAdapter(ITextOperationTarget.class));
 		st = viewer.getTextWidget();
 		
-		// 此处关于st的获取方式待解决
+		// 此处关于st的获取方式暂且略过，用不到
 		//CompilationUnitEditor cue = (CompilationUnitEditor) ed;
 		//st = cue.getViewer().getTextWidget();
 		sel = ed.getSelectionProvider();
-		
-		// new-start
-		//IAnnotationModel model = cue.getViewer().getAnnotationModel();
-
-		// new-end
 
 		cp = new CentralProcessor();
 
@@ -77,34 +68,11 @@ public class Launcher {
 		CoDocumentListener listener = new CoDocumentListener(view, cp, st);
 
 		doc.addDocumentListener(listener);
-		// ed.getEditorSite().getSelectionProvider().addSelectionChangedListener(sel);
-
-		CoVerifyKeyListener verifyKeyListener = new CoVerifyKeyListener(view,
-				cp, st, sel);
-		st.addVerifyKeyListener(verifyKeyListener);
-
-		CoModifyListener modifyListener = new CoModifyListener(view, cp, st);
-		st.addModifyListener(modifyListener);
 
 		cp.docName = docName;
+		// 将新建的CentralProcessor加入CentralProcessorManager中
+		CentralProcessorManager.addCentralProcessor(docName, cp); 
 		cp.start();
-
-		//cp.dalProcessor.isDebugingMode = applyDAL ? false : true;
-
-		CoLineBackgroundListener lineBackgroundListener = new CoLineBackgroundListener(
-				view, cp, st);
-		st.addLineBackgroundListener(lineBackgroundListener);
-
-		st.addKeyListener(new CoKeyListenerForSideView(view, cp, st));
-		st.addMouseWheelListener(new CoMouseWheelListenerForSideView(view, cp,
-				st));
-
-		CoCaretListener caretListener = new CoCaretListener(view, cp, st, sel);
-		st.addCaretListener(caretListener);
-
-		// System.out.println("started\r\n"); //debug
-
-		//view.label.setText("Session\r\nstarted.\r\nSite ID: " + cp.sm.sid);
 		
 		return 0;
 	}
