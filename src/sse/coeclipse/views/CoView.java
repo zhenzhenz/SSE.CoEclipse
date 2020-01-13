@@ -2,7 +2,10 @@ package sse.coeclipse.views;
 
 
 import java.util.ArrayList;
-
+import java.io.FileOutputStream;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
@@ -15,6 +18,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -29,6 +34,7 @@ import org.eclipse.wb.swt.SWTResourceManager;
 
 import sse.coeclipse.core.Launcher;
 import sse.coeclipse.listeners.WorkspacePartListener;
+import sse.coeclipse.listeners.WorkspaceResourceChangeListener;
 import sse.coeclipse.processor.EditingOperation;
 import sse.coeclipse.processor.RemoteOperationProcessor;
 
@@ -134,9 +140,12 @@ public class CoView extends ViewPart implements Listener {
 
 	private Button buttonManualLock = null;
 	 
+	MessageBox msgBox = null; 
 	
 	public ConnectionConfigurationWindow win;
-
+	
+	public IWorkspace resourcesWorkspace;
+	public WorkspaceResourceChangeListener wrcl;
 
 	// CoView的UI布局
 	@Override
@@ -159,6 +168,12 @@ public class CoView extends ViewPart implements Listener {
 		buttonRemoteDel.setBounds(new Rectangle(140, 2, 50, 27));
 		buttonRemoteDel.setText("delete");
 		buttonRemoteDel.addListener(SWT.Selection, this);
+		
+		
+		msgBox = new MessageBox(new Shell(), SWT.OK | SWT.ICON_INFORMATION);
+		String msg = "this is the content.";
+		msgBox.setMessage(msg);
+		msgBox.setText("This is the text");
 
 	}
 
@@ -174,6 +189,11 @@ public class CoView extends ViewPart implements Listener {
 		WorkspacePartListener wpl = new WorkspacePartListener();
 		wpl.view = this;
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(wpl);
+		
+		// 挂载资源监听器
+		resourcesWorkspace = ResourcesPlugin.getWorkspace();
+		wrcl = new WorkspaceResourceChangeListener();
+		resourcesWorkspace.addResourceChangeListener(wrcl);
 	
 		return 0;
 	}
@@ -215,6 +235,8 @@ public class CoView extends ViewPart implements Listener {
 		// buttonStart的响应事件
 		if (event.widget == buttonStart)
 		{
+		   
+		    //msgBox.open();
 //			打开连接配置窗口
 			win = new ConnectionConfigurationWindow(Display.getCurrent().getActiveShell(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.OK, this);
 			win.open();
@@ -230,6 +252,7 @@ public class CoView extends ViewPart implements Listener {
 //    		}
 		} // buttonRemote的响应事件,本地debug用
 		else if (event.widget == buttonRemote) {
+			//msgBox.open();
 			EditingOperation eo = new EditingOperation();
 			
 			eo.type = 1;
@@ -237,6 +260,19 @@ public class CoView extends ViewPart implements Listener {
 			eo.length = 2;
 			eo.content = "ha";
 			RemoteOperationProcessor.processRemoteOperation("/OJ/OJ.iml", eo);
+	        try {
+	            //向文件中写入字节数组
+	            String font="test file input";
+	            FileOutputStream fos = new FileOutputStream("/Users/lixiangzhen/JavaProject/OJ/FOSDemo.txt");
+	            fos.write(font.getBytes());
+	            System.out.println("write file"); //debug
+	            //关闭此文件输出流并释放与此流有关的所有系统资源。此文件输出流不能再用于写入字节。 如果此流有一个与之关联的通道，则关闭该通道。 
+	            fos.close();
+	            ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, null);
+	            //ResourcesPlugin.getWorkspace().getRoot().getProjectRelativePath()
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
 		}
 		else if (event.widget == buttonRemoteDel) {
 			EditingOperation eo = new EditingOperation();
@@ -246,6 +282,11 @@ public class CoView extends ViewPart implements Listener {
 			eo.length = 4;
 			eo.content = "";
 			RemoteOperationProcessor.processRemoteOperation("/OJ/OJ.iml", eo);
+			System.out.println("path");
+			System.out.println(ResourcesPlugin.getWorkspace().getRoot().getFullPath());
+			System.out.println(ResourcesPlugin.getWorkspace().getRoot().getLocation());
+			System.out.println(ResourcesPlugin.getWorkspace().getRoot().getRawLocationURI());
+			System.out.println(ResourcesPlugin.getWorkspace().getRoot().getProjects()[0].getLocation());
 		}
 		
 	}

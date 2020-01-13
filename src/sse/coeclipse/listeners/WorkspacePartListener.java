@@ -47,6 +47,7 @@ public class WorkspacePartListener implements IPartListener {
     			
     			String docName;
     			docName = file.getFullPath().toString();
+    			//docName = file.getLocation().toString();
     					
     			System.out.println(docName);
     			
